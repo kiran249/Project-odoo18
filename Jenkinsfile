@@ -1,7 +1,7 @@
 // Deploys Odoo 18 + PostgreSQL + Keycloak + Prometheus/Grafana to EKS.
-// Runs on the EKS bastion host (Jenkins installed there, see scripts/setup-bastion.sh).
+// Runs on the EKS bastion host, added to Jenkins as an SSH agent with label "bastion".
 pipeline {
-    agent any
+    agent { label 'bastion' }
 
     parameters {
         choice(name: 'ACTION', choices: ['deploy', 'destroy'], description: 'deploy = install/update everything, destroy = remove everything (DELETES DATA)')
