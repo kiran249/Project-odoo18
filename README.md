@@ -25,7 +25,7 @@ scripts/setup-bastion.sh  one-time bastion setup
 ## 1. Prerequisites (AWS side)
 
 1. **EKS cluster** with the **Amazon EBS CSI Driver** add-on installed. Postgres and Odoo store their data on EBS disks.
-2. **Bastion host** (Ubuntu) with an **IAM role** that can manage the cluster. In EKS → Access → *Create access entry*, add the role with the `AmazonEKSClusterAdminPolicy`.
+2. **Bastion host** (Amazon Linux 2023 or Amazon Linux 2) with an **IAM role** that can manage the cluster. In EKS → Access → *Create access entry*, add the role with the `AmazonEKSClusterAdminPolicy`.
 3. **Security groups**
    - Worker nodes: allow inbound TCP `30069, 30080, 30090, 30300` from your IP.
    - Bastion: allow inbound TCP `8080` (Jenkins) from your IP.
