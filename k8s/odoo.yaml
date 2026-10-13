@@ -1,0 +1,77 @@
+# Odoo 18 - reachable at http://<node-ip>:30069
+# Its config file (master password + DB connection) comes from the "odoo-conf"
+# secret, which the Jenkins pipeline creates.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: odoo-data
+  namespace: odoo
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: ebs-gp3
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: odoo
+  namespace: odoo
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate          # EBS disk can only attach to one pod at a time
+  selector:
+    matchLabels:
+      app: odoo
+  template:
+    metadata:
+      labels:
+        app: odoo
+    spec:
+      securityContext:
+        fsGroup: 101        # "odoo" user in the image, so it can write to the disk
+      containers:
+        - name: odoo
+          image: odoo:18.0
+          ports:
+            - containerPort: 8069
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/odoo
+            - name: conf
+              mountPath: /etc/odoo/odoo.conf
+              subPath: odoo.conf
+          readinessProbe:
+            tcpSocket:
+              port: 8069
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              memory: 2Gi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: odoo-data
+        - name: conf
+          secret:
+            secretName: odoo-conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: odoo
+  namespace: odoo
+spec:
+  type: NodePort
+  selector:
+    app: odoo
+  ports:
+    - port: 8069
+      targetPort: 8069
+      nodePort: 30069

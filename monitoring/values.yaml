@@ -1,0 +1,42 @@
+# Values for the kube-prometheus-stack Helm chart.
+# Prometheus -> http://<node-ip>:30090   Grafana -> http://<node-ip>:30300
+
+alertmanager:
+  enabled: false
+
+prometheus:
+  service:
+    type: NodePort
+    nodePort: 30090
+  prometheusSpec:
+    retention: 7d
+    # Scrape the postgres-exporter sidecar running next to Postgres
+    additionalScrapeConfigs:
+      - job_name: postgres
+        static_configs:
+          - targets: ["postgres.odoo.svc.cluster.local:9187"]
+
+grafana:
+  service:
+    type: NodePort
+    nodePort: 30300
+  admin:
+    existingSecret: grafana-admin       # created by the Jenkins pipeline
+    userKey: admin-user
+    passwordKey: admin-password
+  # Extra dashboard for PostgreSQL (Kubernetes dashboards are built in)
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: extra
+          folder: Extra
+          type: file
+          options:
+            path: /var/lib/grafana/dashboards/extra
+  dashboards:
+    extra:
+      postgres:
+        gnetId: 9628
+        revision: 7
+        datasource: Prometheus
