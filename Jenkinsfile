@@ -114,14 +114,21 @@ CONF
             when { expression { params.ACTION == 'deploy' } }
             steps {
                 sh '''
-                    IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
-                    [ -z "$IP" ] && IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
+                    lb() {   # wait for the AWS load balancer address of a service
+                        for i in $(seq 1 30); do
+                            H=$(kubectl -n "$1" get svc "$2" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+                            [ -n "$H" ] && { echo "$H"; return; }
+                            sleep 10
+                        done
+                        echo "<pending - check: kubectl -n $1 get svc $2>"
+                    }
                     echo "=============================================="
-                    echo " Odoo       : http://$IP:30069"
-                    echo " Keycloak   : http://$IP:30080   (user: admin)"
-                    echo " Grafana    : http://$IP:30300   (user: admin)"
-                    echo " Prometheus : http://$IP:30090"
+                    echo " Odoo       : http://$(lb odoo odoo)"
+                    echo " Keycloak   : http://$(lb odoo keycloak)   (user: admin)"
+                    echo " Grafana    : http://$(lb monitoring monitoring-grafana)   (user: admin)"
+                    echo " Prometheus : http://$(lb monitoring monitoring-kube-prometheus-prometheus):9090"
                     echo "=============================================="
+                    echo " New load balancers need 2-3 minutes before they answer."
                 '''
             }
         }

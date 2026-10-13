@@ -1,4 +1,4 @@
-# Keycloak 26 on plain HTTP - reachable at http://<node-ip>:30080
+# Keycloak 26 on plain HTTP - reachable at http://<load-balancer-address>
 # Stores its data in the "keycloak" database on the shared Postgres.
 apiVersion: apps/v1
 kind: Deployment
@@ -65,11 +65,12 @@ kind: Service
 metadata:
   name: keycloak
   namespace: odoo
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: keycloak
   ports:
-    - port: 8080
+    - port: 80
       targetPort: 8080
-      nodePort: 30080

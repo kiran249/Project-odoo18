@@ -1,4 +1,4 @@
-# Odoo 18 - reachable at http://<node-ip>:30069
+# Odoo 18 - reachable at http://<load-balancer-address>
 # Its config file (master password + DB connection) comes from the "odoo-conf"
 # secret, which the Jenkins pipeline creates.
 apiVersion: v1
@@ -67,10 +67,12 @@ kind: Service
 metadata:
   name: odoo
   namespace: odoo
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
 spec:
   type: LoadBalancer
   selector:
     app: odoo
   ports:
-    - port: 8069
+    - port: 80
       targetPort: 8069

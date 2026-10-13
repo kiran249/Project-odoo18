@@ -4,13 +4,14 @@ This repo deploys the following to an existing EKS cluster:
 
 | App        | URL                          | Login                        |
 |------------|------------------------------|------------------------------|
-| Odoo 18    | `http://<node-ip>:30069`     | create a database on first visit (needs the master password) |
-| Keycloak   | `http://<node-ip>:30080`     | `admin` / keycloak-admin-password |
-| Grafana    | `http://<node-ip>:30300`     | `admin` / grafana-admin-password  |
-| Prometheus | `http://<node-ip>:30090`     | none                         |
+| Odoo 18    | `http://<odoo-lb-address>`   | create a database on first visit (needs the master password) |
+| Keycloak   | `http://<keycloak-lb-address>` | `admin` / keycloak-admin-password |
+| Grafana    | `http://<grafana-lb-address>` | `admin` / grafana-admin-password  |
+| Prometheus | `http://<prometheus-lb-address>:9090` | none                         |
 
 PostgreSQL 16 runs inside the cluster and is not exposed. Odoo and Keycloak use it, each with its own database user.
-There are no domains, no ingress and no TLS. Every app is a NodePort service, so you open it at a worker node's IP address.
+There are no domains, no ingress and no TLS. Every app gets its own public AWS load balancer; the pipeline prints the addresses at the end.
+Public subnets must carry the tag `kubernetes.io/role/elb = 1` so AWS knows where to put the load balancers.
 
 ```
 k8s/storageclass.yaml   EBS gp3 disks

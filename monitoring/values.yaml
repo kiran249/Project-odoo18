@@ -1,13 +1,14 @@
 # Values for the kube-prometheus-stack Helm chart.
-# Prometheus -> http://<node-ip>:30090   Grafana -> http://<node-ip>:30300
+# Prometheus -> http://<load-balancer-address>:9090   Grafana -> http://<load-balancer-address>
 
 alertmanager:
   enabled: false
 
 prometheus:
   service:
-    type: NodePort
-    nodePort: 30090
+    type: LoadBalancer
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
   prometheusSpec:
     retention: 7d
     # Scrape the postgres-exporter sidecar running next to Postgres
@@ -18,8 +19,9 @@ prometheus:
 
 grafana:
   service:
-    type: NodePort
-    nodePort: 30300
+    type: LoadBalancer
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
   admin:
     existingSecret: grafana-admin       # created by the Jenkins pipeline
     userKey: admin-user
