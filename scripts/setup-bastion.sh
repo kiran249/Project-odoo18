@@ -4,6 +4,11 @@
 # Run as:  sudo bash scripts/setup-bastion.sh
 set -euo pipefail
 
+# Re-run as root if started as a normal user (e.g. ec2-user)
+if [ "$(id -u)" -ne 0 ]; then
+    exec sudo bash "$0" "$@"
+fi
+
 # dnf on Amazon Linux 2023, yum on Amazon Linux 2
 PKG=$(command -v dnf || command -v yum)
 
