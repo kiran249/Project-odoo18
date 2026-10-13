@@ -5,7 +5,7 @@ pipeline {
 
     parameters {
         choice(name: 'ACTION', choices: ['deploy', 'destroy'], description: 'deploy = install/update everything, destroy = remove everything (DELETES DATA)')
-        string(name: 'CLUSTER_NAME', defaultValue: 'my-eks-cluster', description: 'EKS cluster name')
+        string(name: 'CLUSTER_NAME', defaultValue: 'odoo-eks-cluster', description: 'EKS cluster name')
         string(name: 'AWS_REGION', defaultValue: 'us-east-1', description: 'AWS region of the cluster')
     }
 
